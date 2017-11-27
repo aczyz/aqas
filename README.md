@@ -1,3 +1,3 @@
 # aqas
 
-abductive question-answer system
+Abductive Question-Answer System in Haskell
