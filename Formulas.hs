@@ -7,8 +7,9 @@ data Form =   V Int
             | D Form Form   --disjunction
             | I Form Form   --implication
             deriving (Eq, Read, Show)
-
-isLiteral :: Form -> Bool   --checks whether literal or not
+            
+-- checking if formula is a literal
+isLiteral :: Form -> Bool
 isLiteral x = case x of
                 V _ -> True
                 N z -> case z of
@@ -16,9 +17,9 @@ isLiteral x = case x of
                             _ -> False
                 _   -> False
 
-alphaForm :: Form -> Bool   --check if alpha
-alphaForm x = case x of 
-                    V _   -> True    -- ??
+-- checking if formula is an alpha
+alphaForm :: Form -> Bool
+alphaForm x = case x of
                     C _ _ -> True
                     N z -> case z of 
                             D _ _ -> True
@@ -27,12 +28,6 @@ alphaForm x = case x of
                             _ -> False
                     _ -> False        
 
-betaForm :: Form -> Bool   -- check if beta
-betaForm x = not (alphaForm x) -- not alpha                            
-
-{- dNegForm :: Form -> Bool   --check if double negation
-dNegForm x = case x of 
-                  N a -> case a of
-                              N _ -> True
-                              _ -> False
-                  _ -> False -}
+-- checking if formula is a beta
+betaForm :: Form -> Bool
+betaForm x = not (alphaForm x)
