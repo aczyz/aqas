@@ -3,34 +3,56 @@ module Rules where
 import Sequents
 import Formulas
 
--- fst formulas's ingredients in a list (left side)   (why?)
-lAlpha :: Sequent -> [Form]  
-lAlpha (x:xs, ys) = alphaIng x
+-- list with left alpha formulas only
+lAlpha :: Sequent ->[Form]
+lAlpha (x, y) = filter alphaForm x
 
-rAlpha :: Sequent -> [Form]  
-rAlpha (xs, y:ys) = alphaIng y
+-- list with right alpha formulas only
+rAlpha :: Sequent -> [Form]
+rAlpha (x, y) = filter alphaForm y
 
-lBeta :: Sequent -> [Form] -- left beta rule
-lBeta (x:xs, ys) = betaIng x
+-- list with left beta formulas only
+lBeta :: Sequent -> [Form]
+lBeta (x, y) = filter betaForm x
 
+-- list with right beta formulas only
 rBeta :: Sequent -> [Form]
-rBeta (xs, y:ys) = betaIng y
+rBeta (x, y) = filter betaForm y
 
-lDNeg :: Sequent -> HyperSequent -- not necessary as dbl neg is already an alpha, keeping just in case
-lDNeg (x:xs, ys) = case x of 
-                        N a -> case a of
-                                    N b -> [(b:xs, ys)]
-                                    _ -> [(x:xs, ys)]
-                        _ -> lDNeg (xs ++ [x], ys)
+-- list with left literals only
+l_lit :: Sequent -> [Form]
+l_lit (x, y) = filter isLiteral x
 
-rDNeg :: Sequent -> HyperSequent 
-rDNeg (xs, y:ys) = case y of 
-                        N a -> case a of
-                                    N b -> [(xs, b:ys)]
-                                    _ -> [(xs, y:ys)]
-                        _ -> rDNeg (xs, ys ++ [y])
+-- list with right literals only
+r_lit :: Sequent -> [Form]
+r_lit (x, y) = filter isLiteral y
 
--- sorting list ([alpha, beta], [beta, alpha])
+
+-- list of alpha formula's components
+-- added variables, the reason is stated below 
+alphaIng :: Form -> [Form]
+alphaIng x = case x of
+                V _ -> [x]
+                C z y -> [z, y]
+                N v -> case v of
+                            V _ -> [x]
+                            D z y -> [N z, N y]
+                            I z y -> [z, N y]
+                            N z -> [z]
+
+-- same but for beta
+-- added variables as there were some problems when trying out one of the examples below (test2)
+betaIng :: Form -> [Form]
+betaIng x = case x of
+                V _ -> [x]
+                I a b -> [N a, b]
+                D a b -> [a, b]
+                N v -> case v of
+                            V _ -> [x]
+                            C a b -> [N a, N b]
+
+
+-- sorting list into ([alpha, beta] [beta, alpha])
 sort' :: Sequent -> Sequent
 sort' (x, y) = (z ++ v, v' ++ z')
             where
@@ -40,51 +62,94 @@ sort' (x, y) = (z ++ v, v' ++ z')
                 v' = filter betaForm y
 
 -- another way of doing so
-sort'' :: Sequent -> Sequent                
-sort'' x = (lAlphaSeq x ++ lBetaSeq x, rBetaSeq x ++ rAlphaSeq x)
+sort'' :: Sequent -> Sequent
+sort'' x = (lAlpha x ++ lBeta x, rBeta x ++ rAlpha x)
 
--- insert formula on the left side
-insertL :: Form -> Sequent -> Sequent
-insertL a (x, y)
-                | alphaForm a = (a:x, y)
-                | betaForm a = (x ++ [a], y)
+-- changing sequent type into tuple
+seq_analys :: Sequent -> ([Form], [Form], [Form], [Form], [Form], [Form])
+seq_analys x = (lAlpha x, rBeta x, lBeta x, rAlpha x, l_lit x, r_lit x)
 
--- insert formula, right side
-insertR :: Form -> Sequent -> Sequent
-insertR a (x, y)
-                | alphaForm a = (x, a:y)
-                | betaForm a = (x, y ++ [a])
+-- example to show that it works
+test1 = seq_analys ([C (V 1) (V 2), V 4, V 6, D (V 3) (V 4)], [C (V 1) (V 3), V 4, V 8])
 
--- list of alpha formula's ingredients
-alphaIng :: Form -> [Form]   --[Form] (?)
-alphaIng x = case x of
-                C z y -> [z, y]
-                N v -> case v of 
-                            D z y -> [N z, N y]
-                            I z y -> [z, N y]
-                            N z -> [z]
-                            
--- same but for beta
-betaIng :: Form -> [Form]
-betaIng x = case x of
-                I a b -> [N a, b]
-                D a b -> [a, b]
-                N v -> case v of
-                            C a b -> [N a, N b]
+-- insert formula in the antecedent of a sequent
+insert_ant :: Form -> ([Form], [Form], [Form], [Form], [Form], [Form]) -> ([Form], [Form], [Form], [Form], [Form], [Form])
+insert_ant y (x, a, b, c, d, e)
+                | alphaForm y = (y:x, a, b, c, d, e)
+                | betaForm y = (x, y:a, b, c, d, e)
+                | isLiteral y = (x, a, y:b, c, d, e)
+                
+-- insert formula in a succedent of a sequent
+insert_succ :: Form -> ([Form], [Form], [Form], [Form], [Form], [Form]) -> ([Form], [Form], [Form], [Form], [Form], [Form])
+insert_succ y (x, a, b, c, d, e)
+                | betaForm y = (x, a, b, y:c, d, e)
+                | alphaForm y = (x, a, b, c, y:d, e)
+                | isLiteral y = (x, a, b, c, d, y:e)
 
--- this one will check first formula and insert it
-rule :: Sequent -> [Sequent]
-rule (x:xs, y:ys)
-            | alphaForm x = case (alphaIng x) of
-                                [z, v] -> [(x:xs, y:ys), insertL z (insertL v (xs, y:ys))]
-                                [z] -> [(x:xs, y:ys), insertL z (xs, y:ys)]
-            | betaForm y = case (betaIng y) of
-                                [z, v] -> [(x:xs, y:ys), insertR z (insertL v (x:xs, ys))]
-                                [z] -> [(x:xs, y:ys), insertR z (x:xs, ys)]
+-- inserting components of given formula (unctions below will vary in regards to formula's type and its side)
+-- in the correct place, making that into a list (as in the case alpha formula on the right side and beta
+-- on the left we'll get two sequents), to make it easier to get those back into sequent form
+l_ins_alpha :: ([Form], [Form], [Form], [Form], [Form], [Form]) -> [([Form], [Form], [Form], [Form], [Form], [Form])]
+l_ins_alpha (x:xs, a, b, c, d, e)
+                        | alphaForm x = case (alphaIng x) of
+                                                           [z, v] -> [insert_ant z (insert_ant v (xs, a, b, c, d, e))]
+                                                           [z] -> [insert_ant z (xs, a, b, c, d, e)]
+
+r_ins_alpha :: ([Form], [Form], [Form], [Form], [Form], [Form]) -> [([Form], [Form], [Form], [Form], [Form], [Form])]
+r_ins_alpha (x, a, b, c, d:ds, e)
+                        | alphaForm d  = case (alphaIng d) of
+                                                           [z, v] -> [insert_succ z (x, a, b, c, ds, e), insert_succ v (x, a, b, c, ds, e)]
+                                                           [z] -> [insert_succ z (x, a, b, c, ds, e)]
+                        | isLiteral d = [(x, a, b, c, ds, d:e)] -- added to check something
+
+l_ins_beta :: ([Form], [Form], [Form], [Form], [Form], [Form]) -> [([Form], [Form], [Form], [Form], [Form], [Form])]
+l_ins_beta (x, a:as, b, c, d, e)
+                        | betaForm a = case (betaIng a) of
+                                                           [z, v] -> [insert_ant v (x, as, b, c, d, e), insert_ant v (x, as, b, c, d, e)]
+                                                           [z] -> [insert_ant z (x, as, b, c, d, e)]
+                        | isLiteral a = [(x, as, a:b, c, d, e)] --same, tbh it won't be needed in future
 
 
--- examples 
-ex = sort' ([D (V 1) (V 2), C (V 4) (V 5), N (V 1)], [V 1, V 2, D (V 1) (V 2)])
-test = rule ex
+r_ins_beta :: ([Form], [Form], [Form], [Form], [Form], [Form]) -> [([Form], [Form], [Form], [Form], [Form], [Form])]
+r_ins_beta (x, a, b, c:cs, d, e)
+                        | betaForm c = case (betaIng c) of
+                                                           [z, v] -> [insert_succ z (insert_succ v (x, a, b, cs, d, e))]
+                                                           [z] -> [insert_succ z (x, a, b, cs, d, e)]
 
 
+-- applying proper rules to non-empty sets
+apply_rule :: ([Form], [Form], [Form], [Form], [Form], [Form]) -> [([Form], [Form], [Form], [Form], [Form], [Form])]
+apply_rule (z, c, v, a, b, d)
+              | not (null z) = l_ins_alpha (z, c, v, a, b, d)
+              | not (null c) = l_ins_beta (z, c, v, a, b, d)
+              | not (null a) = r_ins_beta (z, c, v, a, b, d)
+              | not (null b) = r_ins_alpha (z, c, v, a, b, d)
+
+
+-- getting back into sequent form
+seq_creator :: ([Form], [Form], [Form], [Form], [Form], [Form]) -> Sequent
+seq_creator (x, y, z, a, b, c) = (x ++ y ++ z, a ++ b ++ c)
+
+
+hyper_creator :: HyperSequent -> HyperSequent
+hyper_creator (x:xs) = case (apply_rule (seq_analys x)) of
+                            [z, y] -> [seq_creator z] ++ [seq_creator y] ++ xs
+                            [z] -> [seq_creator z] ++ xs
+
+
+-- creates hseqs out of non atomic sequents
+create_hseq :: HyperSequent -> HyperSequent
+create_hseq [] = []
+create_hseq (x:xs) = case isAtomic x of
+                          True -> x : create_hseq xs
+                          False -> hyper_creator (x:xs)
+
+test3 = create_hseq [([I (V 1) (I (V 2) (V 3)), C (V 2) (V 4)], [I (V 2) (V 3)])]
+test31 = seq_analys (head [([V 2,V 4,I (V 2) (V 3),I (V 1) (I (V 2) (V 3))],[])])
+
+
+drv :: [HyperSequent] -> [HyperSequent]
+drv (x:xs) = [until (isMinimal) create_hseq x] ++ xs
+
+
+test2 = drv [[([I (V 1) (I (V 2) (V 3)), C (V 2) (V 4)], [I (V 2) (V 3)])]]
