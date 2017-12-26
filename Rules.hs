@@ -67,7 +67,7 @@ sort'' x = (lAlpha x ++ lBeta x, rBeta x ++ rAlpha x)
 
 -- changing sequent type into tuple
 seq_analys :: Sequent -> ([Form], [Form], [Form], [Form], [Form], [Form])
-seq_analys x = (lAlpha x, rBeta x, lBeta x, rAlpha x, l_lit x, r_lit x)
+seq_analys x = (lAlpha x, lBeta x, l_lit x, rBeta x, rAlpha x, r_lit x)
 
 -- example to show that it works
 test1 = seq_analys ([C (V 1) (V 2), V 4, V 6, D (V 3) (V 4)], [C (V 1) (V 3), V 4, V 8])
