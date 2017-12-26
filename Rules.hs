@@ -87,7 +87,7 @@ insert_succ y (x, a, b, c, d, e)
                 | isLiteral y = (x, a, b, c, d, y:e)
 
 -- inserting components of given formula (unctions below will vary in regards to formula's type and its side)
--- in the correct place, making that into a list (as in the case alpha formula on the right side and beta
+-- in the correct place, making that into a list (as in the case of alpha formula on the right side and beta
 -- on the left we'll get two sequents), to make it easier to get those back into sequent form
 l_ins_alpha :: ([Form], [Form], [Form], [Form], [Form], [Form]) -> [([Form], [Form], [Form], [Form], [Form], [Form])]
 l_ins_alpha (x:xs, a, b, c, d, e)
@@ -149,7 +149,9 @@ test31 = seq_analys (head [([V 2,V 4,I (V 2) (V 3),I (V 1) (I (V 2) (V 3))],[])]
 
 
 drv :: [HyperSequent] -> [HyperSequent]
-drv (x:xs) = [until (isMinimal) create_hseq x] ++ xs
+drv (x:xs) = [until (isMinimal) create_hseq x] ++ (x:xs)
 
 
-test2 = drv [[([I (V 1) (I (V 2) (V 3)), C (V 2) (V 4)], [I (V 2) (V 3)])]]
+test2 = drv [[([I (V 1) (I (V 2) (V 3)), C (V 2) (V 4)], [I (V 2) (V 3)])]]  --failure
+test4 = drv [[([C (V 1) (V 2)], [V 3])]]  --success (kind of)
+
