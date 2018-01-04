@@ -30,4 +30,4 @@ alphaForm x = case x of
 
 -- checking if formula is a beta
 betaForm :: Form -> Bool
-betaForm x = not (alphaForm x)
+betaForm x = not (alphaForm x) && not (isLiteral x)
