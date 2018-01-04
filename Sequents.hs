@@ -20,7 +20,7 @@ lAlphaSeq (x:xs, ys)
 rBetaSeq :: Sequent -> [Form]                         --creates list with betas (right side)
 rBetaSeq (_, []) = []
 rBetaSeq (xs, y:ys)
-                  | betaForm y = y : lAlphaSeq (xs, ys)
+                  | betaForm y = y : rBetaSeq (xs, ys)
                   | otherwise  = rBetaSeq (xs, ys)
 
 rAlphaSeq :: Sequent -> [Form]                        --creates list with alphas (right side)
