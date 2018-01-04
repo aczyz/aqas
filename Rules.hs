@@ -50,9 +50,9 @@ sCreator2 (x:xs) = (sAnalizer (sort x)) ++ xs
 -- iterates sCreator until hypersequent is minimal
 sCreatorIter :: HyperSequent -> HyperSequent
 sCreatorIter []     = []
-sCreatorIter (x:xs) = if isMinimal (sCreator (x:xs)) || abdProblem (sCreator (x:xs))
-                        then sCreator (x:xs) 
-                        else sCreatorIter (sCreator (x:xs))
+sCreatorIter xs = if isMinimal (sCreator xs)
+                        then sCreator xs
+                        else sCreatorIter (sCreator xs)
 
 
 

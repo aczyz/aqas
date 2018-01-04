@@ -23,7 +23,7 @@ lAlphaSeq (x:xs, ys)
 rBetaSeq :: Sequent -> [Form]                         
 rBetaSeq (_, []) = []
 rBetaSeq (xs, y:ys)
-                  | betaForm y = y : lBetaSeq (xs, ys)
+                  | betaForm y = y : rBetaSeq (xs, ys)
                   | otherwise  = rBetaSeq (xs, ys)
 
 --creates list with alphas (right side)
@@ -54,7 +54,7 @@ isAtomic (x, y) = all isLiteral x && all isLiteral y
 
 --if Hypersequent is minimal
 isMinimal :: HyperSequent -> Bool                   
-isMinimal (x:xs) = all isAtomic (x:xs) 
+isMinimal xs= all isAtomic xs
 
 --if Sequent is closed
 isClosed :: Sequent -> Bool                         
