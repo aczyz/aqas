@@ -18,21 +18,15 @@ isLiteral x = case x of
 
 alphaForm :: Form -> Bool   --check if alpha
 alphaForm x = case x of 
-                    V _   -> True    -- ??
+                    V _   -> False    -- ??
                     C _ _ -> True
                     N z -> case z of 
                             D _ _ -> True
                             I _ _ -> True 
-                            N z -> True
+                            N s -> True
                             _ -> False
                     _ -> False        
 
 betaForm :: Form -> Bool   -- check if beta
-betaForm x = not (alphaForm x) -- not alpha                            
+betaForm x = if (isLiteral x) == False && (alphaForm x) == False then True else False -- not alpha                            
 
-{- dNegForm :: Form -> Bool   --check if double negation
-dNegForm x = case x of 
-                  N a -> case a of
-                              N _ -> True
-                              _ -> False
-                  _ -> False -}
