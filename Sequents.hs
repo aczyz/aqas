@@ -28,6 +28,9 @@ rAlphaSeq (_, []) = []
 rAlphaSeq (xs, y:ys)
                     | alphaForm y = y : rAlphaSeq (xs, ys)
                     | otherwise  = rAlphaSeq (xs, ys)
+                    
+isOpen :: Sequent -> Bool
+isOpen x = not (isClosed x)                    
 
 -- traktujemy dNeg jako alpha, więc nie jest potrzebne
 {-
