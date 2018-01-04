@@ -105,7 +105,7 @@ r_ins_alpha (x, a, b, c, d:ds, e)
 l_ins_beta :: ([Form], [Form], [Form], [Form], [Form], [Form]) -> [([Form], [Form], [Form], [Form], [Form], [Form])]
 l_ins_beta (x, a:as, b, c, d, e)
                         | betaForm a = case (betaIng a) of
-                                                           [z, v] -> [insert_ant v (x, as, b, c, d, e), insert_ant v (x, as, b, c, d, e)]
+                                                           [z, v] -> [insert_ant z (x, as, b, c, d, e), insert_ant v (x, as, b, c, d, e)]
                                                            [z] -> [insert_ant z (x, as, b, c, d, e)]
                         | isLiteral a = [(x, as, a:b, c, d, e)] --same, tbh it won't be needed in future
 
@@ -152,6 +152,9 @@ drv :: [HyperSequent] -> [HyperSequent]
 drv (x:xs) = [until (isMinimal) create_hseq x] ++ (x:xs)
 
 
-test2 = drv [[([I (V 1) (I (V 2) (V 3)), C (V 2) (V 4)], [I (V 2) (V 3)])]]  --failure
-test4 = drv [[([C (V 1) (V 2)], [V 3])]]  --success (kind of)
+test2 = drv [[([I (V 1) (I (V 2) (V 3)), C (V 2) (V 4)], [I (V 2) (V 3)])]]  --success
+test4 = drv [[([C (V 1) (V 2)], [V 3])]]  --success 
+test6 = drv [[([C (I (N (V 1)) (D (V 2) (V 1))) (D (V 1) (V 2))], [D (V 1) (N (V 1)), I (V 10) (V 2), C (V 5) (V 6), C (V 5) (V 7), C (V 5) (V 22), C (V 5) (V 44)])]] --success
+test7 = drv [[([D (C (V 1) (V 2)) (D (V 1) (D (V 3) (V 5)))], [V 6])]] --success
+test8 = drv [[([C (D (V 11) (V 22)) (V 66)], [V 77])]] --success
 
