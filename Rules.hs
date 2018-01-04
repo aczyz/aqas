@@ -158,3 +158,14 @@ test6 = drv [[([C (I (N (V 1)) (D (V 2) (V 1))) (D (V 1) (V 2))], [D (V 1) (N (V
 test7 = drv [[([D (C (V 1) (V 2)) (D (V 1) (D (V 3) (V 5)))], [V 6])]] --success
 test8 = drv [[([C (D (V 11) (V 22)) (V 66)], [V 77])]] --success
 
+
+-- returns head of list with hseqs, so the minimal hseq
+lasthseq :: [HyperSequent] -> HyperSequent
+lastsheq x = head x
+
+
+abd_prob :: HyperSequent -> HyperSequent
+abd_prob x = filter isOpen x
+
+test9 = abd_prob (lasthseq test7)
+
