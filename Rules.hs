@@ -161,7 +161,7 @@ test8 = drv [[([C (D (V 11) (V 22)) (V 66)], [V 77])]] --success
 
 -- returns head of list with hseqs, so the minimal hseq
 lasthseq :: [HyperSequent] -> HyperSequent
-lastsheq x = head x
+lasthseq x = head x
 
 
 abd_prob :: HyperSequent -> HyperSequent
