@@ -4,6 +4,7 @@ import Formulas
 
 type Sequent = ([Form], [Form])
 type HyperSequent = [Sequent]
+type HSeqSorted = ([Form], [Form], [Form], [Form], [Form], [Form])
 
 lBetaSeq :: Sequent -> [Form]                         --creates list with betas (left side)
 lBetaSeq ([], _) = []
